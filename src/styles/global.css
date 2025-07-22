@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-50;
+}
+
+.timeline-item {
+  @apply relative pl-8 pb-8 border-l-4 border-primary;
+}
+
+.timeline-item:last-child {
+  @apply pb-0;
+}
+
+.timeline-item::before {
+  @apply absolute left-[-10px] top-0 w-5 h-5 rounded-full bg-primary;
+  content: '';
+}

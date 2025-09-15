@@ -1,0 +1,72 @@
+name: SonarQube analysis
+
+on:
+  push:
+    branches: [ main ]        # adjust branch list as needed
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonar:
+    name: SonarQube scan
+    runs-on: ubuntu-latest
+    steps:
+      # 1) Checkout full history (important to avoid "missing blame" warnings)
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # important for SCM blame info & PR detection. See Sonar docs. :contentReference[oaicite:4]{index=4}
+
+      # 2) Setup Node for building/testing (Astro uses Vite, so Node required)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'    # or the Node version your project uses
+
+      # (Optional) cache node modules (speeds up workflow)
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # 3) Install deps
+      - name: Install dependencies
+        run: npm ci
+
+      # 4) Run tests and produce lcov coverage (optional, recommended)
+      #    If you use Vitest: npx vitest run --coverage
+      #    If you use Jest: npm test -- --coverage --coverageReporters=lcov
+      - name: Run tests (generate coverage)
+        run: |
+          # Adjust the command below to your test runner
+          npm run test -- --coverage || true
+        continue-on-error: false
+
+      # 5) Build (Astro project) - required if your analysis needs built artifacts
+      - name: Build project
+        run: npm run build
+
+      # 6) Install Java 17 (scanner needs it)
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 7) Run SonarQube analysis using official SonarSource action
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          # If you have sonar-project.properties in repo, you can omit args.
+          # Otherwise override properties here:
+          args: >
+            -Dsonar.projectKey=myorg_my-astro-site
+            -Dsonar.sources=src
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info

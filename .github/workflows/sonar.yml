@@ -44,7 +44,7 @@ jobs:
       # 7) Run SonarQube Scanner (PowerShell-friendly, portable)
       - name: Run SonarQube Scanner
         run: |
-          & "$env:SONAR_SCANNER_HOME\bin\sonar-scanner" `
+          & "${env:SONAR_SCANNER_HOME}\bin\sonar-scanner" `
             -Dsonar.projectKey=myorg_my-astro-site `
             -Dsonar.sources=src `
             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md `

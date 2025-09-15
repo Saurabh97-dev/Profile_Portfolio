@@ -41,19 +41,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 7) Run SonarQube Scanner (PowerShell-friendly, portable)
+      # 7) Run SonarQube Scanner (PowerShell-safe)
       - name: Run SonarQube Scanner
         shell: powershell
         run: |
-          & "${env:SONAR_SCANNER_HOME}\bin\sonar-scanner.bat" `
-          -Dsonar.projectKey=myorg_my-astro-site `
-          -Dsonar.sources=src `
-          -Dsonar.exclusions="**/node_modules/**,**/dist/**,**/.astro/**,**/*.md" `
-          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info `
-          -Dsonar.host.url=$env:SONAR_HOST_URL `
-          -Dsonar.login=$env:SONAR_TOKEN
+          $args = @(
+            "-Dsonar.projectKey=myorg_my-astro-site"
+            "-Dsonar.sources=src"
+            "-Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md"
+            "-Dsonar.javascript.lcov.reportPaths=coverage/lcov.info"
+            "-Dsonar.host.url=$env:SONAR_HOST_URL"
+            "-Dsonar.login=$env:SONAR_TOKEN"
+          )
+          & "D:\sonar-scanner\bin\sonar-scanner.bat" $args
         env:
-          SONAR_SCANNER_HOME: "D:\\sonar-scanner"
-          JAVA_HOME: C:\Windows\System32\actions-runner\_work\_tool\Java_Temurin-Hotspot_jdk\17.0.16-8\x64
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          JAVA_HOME: C:\Windows\System32\actions-runner\_work\_tool\Java_Temurin-Hotspot_jdk\17.0.16-8\x64

@@ -9,7 +9,7 @@ on:
 jobs:
   sonar:
     name: SonarQube scan
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       # 1) Checkout full history (important to avoid "missing blame" warnings)
       - name: Checkout code

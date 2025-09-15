@@ -18,11 +18,12 @@ jobs:
           fetch-depth: 0        # important for SCM blame info & PR detection. See Sonar docs. :contentReference[oaicite:4]{index=4}
 
       # 2) Setup Node for building/testing (Astro uses Vite, so Node required)
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'    # or the Node version your project uses
-
+          # check-latest: true
+          # cache: 'npm'
       # (Optional) cache node modules (speeds up workflow)
       - name: Cache node modules
         uses: actions/cache@v4

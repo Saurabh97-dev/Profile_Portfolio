@@ -27,14 +27,8 @@ jobs:
         run: npm ci
 
       # 4) Run tests (generate coverage)
-      - name: Run tests with coverage
-        run: |
-          npm run test -- --coverage || echo "Tests may have failed but continuing for SonarQube analysis"
-          # Ensure coverage directory exists even if tests fail
-          if (!(Test-Path "coverage")) {
-            New-Item -ItemType Directory -Path "coverage" -Force
-          }
-        shell: powershell
+      - name: Run tests (generate coverage)
+        run: npm run test -- --coverage; exit 0
 
       # 5) Build project
       - name: Build project
@@ -47,144 +41,17 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 7) Automatic SonarScanner Setup (download if not found)
-      - name: Setup SonarScanner
-        run: |
-          # Function to download and setup SonarScanner
-          function Install-SonarScanner {
-            $sonarVersion = "5.0.1.3006"
-            $sonarUrl = "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$sonarVersion-windows.zip"
-            $downloadPath = "$env:RUNNER_TEMP/sonar-scanner.zip"
-            $installPath = "$env:RUNNER_TEMP/sonar-scanner"
-            
-            echo "Downloading SonarScanner from $sonarUrl"
-            try {
-              Invoke-WebRequest -Uri $sonarUrl -OutFile $downloadPath -ErrorAction Stop
-            } catch {
-              echo "Failed to download SonarScanner: $($_.Exception.Message)"
-              exit 1
-            }
-            
-            echo "Extracting SonarScanner"
-            try {
-              Expand-Archive -Path $downloadPath -DestinationPath $installPath -Force -ErrorAction Stop
-            } catch {
-              echo "Failed to extract SonarScanner: $($_.Exception.Message)"
-              exit 1
-            }
-            
-            # Find the actual scanner directory
-            $scannerDir = Get-ChildItem -Path $installPath -Directory -Filter "sonar-scanner*" | Select-Object -First 1
-            
-            if ($scannerDir) {
-              echo "SONAR_SCANNER_HOME=$($scannerDir.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
-              echo "$($scannerDir.FullName)\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
-              echo "SonarScanner installed at: $($scannerDir.FullName)"
-              return $true
-            } else {
-              echo "ERROR: Failed to find SonarScanner after extraction"
-              return $false
-            }
-          }
-
-          # Check if SonarScanner is already installed
-          $sonarFound = $false
-          
-          # Check if already in PATH
-          if (Get-Command sonar-scanner -ErrorAction SilentlyContinue) {
-            echo "SonarScanner found in PATH"
-            $sonarScannerPath = (Get-Command sonar-scanner).Source
-            $sonarHome = [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetDirectoryName($sonarScannerPath))
-            echo "SONAR_SCANNER_HOME=$sonarHome" | Out-File -FilePath $env:GITHUB_ENV -Append
-            $sonarFound = $true
-          }
-          
-          # Check common installation paths
-          if (-not $sonarFound) {
-            $possiblePaths = @(
-              "D:\IDE Tool\sonar-scanner",
-              "C:\sonar-scanner",
-              "C:\tools\sonar-scanner",
-              "$env:ProgramFiles\sonar-scanner",
-              "${env:ProgramFiles(x86)}\sonar-scanner",
-              "$env:LOCALAPPDATA\sonar-scanner",
-              "$env:USERPROFILE\sonar-scanner"
-            )
-            
-            foreach ($path in $possiblePaths) {
-              if (Test-Path "$path\bin\sonar-scanner.bat") {
-                echo "Found SonarScanner at: $path"
-                echo "SONAR_SCANNER_HOME=$path" | Out-File -FilePath $env:GITHUB_ENV -Append
-                echo "$path\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
-                $sonarFound = $true
-                break
-              }
-            }
-          }
-          
-          # If still not found, download it
-          if (-not $sonarFound) {
-            echo "SonarScanner not found locally, downloading..."
-            $sonarFound = Install-SonarScanner
-          }
-          
-          if (-not $sonarFound) {
-            echo "ERROR: Failed to setup SonarScanner"
-            exit 1
-          }
-        shell: powershell
-
-      # 8) Verify SonarScanner setup
-      - name: Verify SonarScanner setup
-        run: |
-          echo "SONAR_SCANNER_HOME: $env:SONAR_SCANNER_HOME"
-          echo "PATH: $env:PATH"
-          
-          if (Test-Path "$env:SONAR_SCANNER_HOME\bin\sonar-scanner.bat") {
-            echo "✓ SonarScanner found at expected location"
-            & "$env:SONAR_SCANNER_HOME\bin\sonar-scanner.bat" --version
-          } else {
-            echo "✗ SonarScanner NOT found at expected location"
-            echo "Searching for SonarScanner..."
-            Get-ChildItem -Path "C:\" -Filter "*sonar*" -Recurse -Directory -ErrorAction SilentlyContinue | Select-Object FullName | ForEach-Object { echo "Found: $_" }
-            exit 1
-          }
-        shell: powershell
-
-      # 9) Run SonarQube Scanner
+      # 7) Run SonarQube Scanner (PowerShell-friendly, portable)
       - name: Run SonarQube Scanner
         run: |
-          echo "Running SonarQube analysis..."
-          echo "Project properties:"
-          Get-Content sonar-project.properties
-          
-          echo ""
-          echo "Running sonar-scanner command..."
-          
-          # Run sonar-scanner with only the sensitive credentials as parameters
-          & "$env:SONAR_SCANNER_HOME\bin\sonar-scanner.bat" `
-            -D"sonar.host.url=$env:SONAR_HOST_URL" `
-            -D"sonar.login=$env:SONAR_TOKEN"
-          
-          # Check exit code
-          if ($LASTEXITCODE -ne 0) {
-            echo "SonarScanner failed with exit code: $LASTEXITCODE"
-            exit $LASTEXITCODE
-          }
-          
-          echo "SonarQube analysis completed successfully!"
+          & "${env:SONAR_SCANNER_HOME}\bin\sonar-scanner.bat" `
+            -Dsonar.projectKey=myorg_my-astro-site `
+            -Dsonar.sources=src `
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md `
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info `
+            -Dsonar.host.url=$env:SONAR_HOST_URL `
+            -Dsonar.login=$env:SONAR_TOKEN
         shell: powershell
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-      # 10) Upload SonarQube report (optional)
-      - name: Upload SonarQube report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: sonarqube-report
-          path: |
-            .scannerwork/
-            coverage/
-          retention-days: 7

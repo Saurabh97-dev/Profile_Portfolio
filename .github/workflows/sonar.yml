@@ -1,5 +1,14 @@
+name: SonarQube analysis
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
 jobs:
   sonar:
+    name: SonarQube scan
     runs-on: self-hosted
     steps:
       - name: Checkout code
@@ -8,7 +17,7 @@ jobs:
           fetch-depth: 0
 
       - name: Check Node.js version
-        run: node -v   # uses the Node.js already installed (22.14.0)
+        run: node -v   # Uses Node.js v22.14.0 installed on your machine
 
       - name: Install dependencies
         run: npm ci

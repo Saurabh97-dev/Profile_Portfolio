@@ -36,15 +36,15 @@ jobs:
 
       # ✅ Replace the action step with Windows CLI version
       - name: Run SonarQube Scanner
-        run: |
-          "D:\IDE Tool\sonar-scanner\bin\sonar-scanner.bat" ^
-            -Dsonar.projectKey=myorg_my-astro-site ^
-            -Dsonar.sources=src ^
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md ^
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info ^
-            -Dsonar.host.url=%SONAR_HOST_URL% ^
-            -Dsonar.login=%SONAR_TOKEN%
-        shell: powershell
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+  run: |
+    "$env:SONAR_SCANNER_HOME_File\bin\sonar-scanner.bat" ^
+      -Dsonar.projectKey=myorg_my-astro-site ^
+      -Dsonar.sources=src ^
+      -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md ^
+      -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info ^
+      -Dsonar.host.url=$env:SONAR_HOST_URL ^
+      -Dsonar.login=$env:SONAR_TOKEN
+  shell: powershell
+  env:
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

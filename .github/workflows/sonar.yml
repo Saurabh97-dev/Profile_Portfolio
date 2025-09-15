@@ -53,5 +53,8 @@ jobs:
             -Dsonar.login=$env:SONAR_TOKEN
         shell: powershell
         env:
+          SONAR_SCANNER_HOME: "D:\\sonar-scanner"
+          JAVA_HOME: C:\Windows\System32\actions-runner\_work\_tool\Java_Temurin-Hotspot_jdk\17.0.16-8\x64
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+

@@ -41,16 +41,75 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 7) Run SonarQube Scanner (PowerShell-friendly, portable)
+      # 7) Setup SonarScanner - NEW STEP
+      - name: Setup SonarScanner
+        run: |
+          # Check if SonarScanner is already in PATH
+          if (Get-Command sonar-scanner -ErrorAction SilentlyContinue) {
+            echo "SonarScanner found in PATH"
+            $sonarScannerPath = (Get-Command sonar-scanner).Source
+            echo "SONAR_SCANNER_HOME=$([System.IO.Path]::GetDirectoryName($sonarScannerPath))" | Out-File -FilePath $env:GITHUB_ENV -Append
+          }
+          else {
+            # Try common installation paths
+            $possiblePaths = @(
+              "D:\IDE Tool\sonar-scanner",
+              "C:\sonar-scanner",
+              "C:\tools\sonar-scanner",
+              "$env:ProgramFiles\sonar-scanner",
+              "${env:ProgramFiles(x86)}\sonar-scanner"
+            )
+            
+            foreach ($path in $possiblePaths) {
+              if (Test-Path "$path\bin\sonar-scanner.bat") {
+                echo "Found SonarScanner at: $path"
+                echo "SONAR_SCANNER_HOME=$path" | Out-File -FilePath $env:GITHUB_ENV -Append
+                echo "$path\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+                break
+              }
+            }
+          }
+        shell: powershell
+
+      # 8) Verify SonarScanner setup - NEW STEP
+      - name: Verify SonarScanner setup
+        run: |
+          echo "SONAR_SCANNER_HOME: $env:SONAR_SCANNER_HOME"
+          echo "PATH: $env:PATH"
+          if (Test-Path "$env:SONAR_SCANNER_HOME\bin\sonar-scanner.bat") {
+            echo "SonarScanner found at expected location"
+          } else {
+            echo "SonarScanner NOT found at expected location"
+            Get-ChildItem -Path "C:\" -Filter "*sonar*" -Recurse -Directory -ErrorAction SilentlyContinue | Select-Object FullName
+          }
+        shell: powershell
+
+      # 9) Run SonarQube Scanner (updated with fallback)
       - name: Run SonarQube Scanner
         run: |
-          & "${env:SONAR_SCANNER_HOME}\bin\sonar-scanner.bat" `
-            -Dsonar.projectKey=myorg_my-astro-site `
-            -Dsonar.sources=src `
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md `
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info `
-            -Dsonar.host.url=$env:SONAR_HOST_URL `
-            -Dsonar.login=$env:SONAR_TOKEN
+          # Try multiple approaches
+          if (Test-Path "$env:SONAR_SCANNER_HOME\bin\sonar-scanner.bat") {
+            & "$env:SONAR_SCANNER_HOME\bin\sonar-scanner.bat" `
+              -Dsonar.projectKey=myorg_my-astro-site `
+              -Dsonar.sources=src `
+              -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md `
+              -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info `
+              -Dsonar.host.url=$env:SONAR_HOST_URL `
+              -Dsonar.login=$env:SONAR_TOKEN
+          }
+          elseif (Get-Command sonar-scanner -ErrorAction SilentlyContinue) {
+            sonar-scanner `
+              -Dsonar.projectKey=myorg_my-astro-site `
+              -Dsonar.sources=src `
+              -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md `
+              -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info `
+              -Dsonar.host.url=$env:SONAR_HOST_URL `
+              -Dsonar.login=$env:SONAR_TOKEN
+          }
+          else {
+            echo "ERROR: SonarScanner not found!"
+            exit 1
+          }
         shell: powershell
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

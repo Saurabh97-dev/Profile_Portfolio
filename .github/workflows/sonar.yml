@@ -17,7 +17,7 @@ jobs:
           fetch-depth: 0
 
       - name: Check Node.js version
-        run: node -v   # Uses Node.js v22.14.0 installed on your machine
+        run: node -v
 
       - name: Install dependencies
         run: npm ci
@@ -34,14 +34,17 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v5
+      # ✅ Replace the action step with Windows CLI version
+      - name: Run SonarQube Scanner
+        run: |
+          sonar-scanner.bat ^
+            -Dsonar.projectKey=myorg_my-astro-site ^
+            -Dsonar.sources=src ^
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md ^
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info ^
+            -Dsonar.host.url=%SONAR_HOST_URL% ^
+            -Dsonar.login=%SONAR_TOKEN%
+        shell: powershell
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          args: >
-            -Dsonar.projectKey=myorg_my-astro-site
-            -Dsonar.sources=src
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info

@@ -36,8 +36,8 @@ jobs:
 
       # ✅ Replace the action step with Windows CLI version
       - name: Run SonarQube Scanner
-        run: |
-          sonar-scanner.bat ^
+          run: |
+          "D:\IDE Tool\sonar-scanner\bin\sonar-scanner.bat" ^
             -Dsonar.projectKey=myorg_my-astro-site ^
             -Dsonar.sources=src ^
             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md ^

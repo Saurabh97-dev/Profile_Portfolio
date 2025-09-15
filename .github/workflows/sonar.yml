@@ -1,4 +1,4 @@
-name: SonarQube analysis
+name: SonarQube Analysis
 
 on:
   push:
@@ -10,41 +10,48 @@ jobs:
   sonar:
     name: SonarQube scan
     runs-on: self-hosted
+
     steps:
+      # 1) Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # 2) Check Node.js version
       - name: Check Node.js version
         run: node -v
 
+      # 3) Install dependencies
       - name: Install dependencies
         run: npm ci
 
+      # 4) Run tests (generate coverage)
       - name: Run tests (generate coverage)
         run: npm run test -- --coverage; exit 0
 
+      # 5) Build project
       - name: Build project
         run: npm run build
 
+      # 6) Setup Java 17 (required for SonarScanner)
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # ✅ Replace the action step with Windows CLI version
+      # 7) Run SonarQube Scanner using portable environment variable
       - name: Run SonarQube Scanner
-  run: |
-    "$env:SONAR_SCANNER_HOME_File\bin\sonar-scanner.bat" ^
-      -Dsonar.projectKey=myorg_my-astro-site ^
-      -Dsonar.sources=src ^
-      -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md ^
-      -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info ^
-      -Dsonar.host.url=$env:SONAR_HOST_URL ^
-      -Dsonar.login=$env:SONAR_TOKEN
-  shell: powershell
-  env:
-    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          "$env:SONAR_SCANNER_HOME\bin\sonar-scanner.bat" ^
+            -Dsonar.projectKey=myorg_my-astro-site ^
+            -Dsonar.sources=src ^
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md ^
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info ^
+            -Dsonar.host.url=$env:SONAR_HOST_URL ^
+            -Dsonar.login=$env:SONAR_TOKEN
+        shell: powershell
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

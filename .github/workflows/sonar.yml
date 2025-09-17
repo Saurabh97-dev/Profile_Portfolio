@@ -46,7 +46,7 @@ jobs:
         shell: powershell
         run: |
           $args = @(
-            "-Dsonar.projectKey=myorg_my-astro-site"
+            "-Dsonar.projectKey=TestAppPortfolio"
             "-Dsonar.sources=src"
             "-Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.astro/**,**/*.md"
             "-Dsonar.javascript.lcov.reportPaths=coverage/lcov.info"

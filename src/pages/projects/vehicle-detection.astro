@@ -1,0 +1,99 @@
+---
+// src/pages/projects/vehicle-detection.astro
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout>
+  <div class="container mx-auto px-4 py-12">
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="p-8 border-b border-gray-200">
+          <h1 class="text-3xl font-bold text-center text-blue-600 mb-2">
+            Vehicle Detection Traffic Monitoring System
+          </h1>
+          <div class="flex justify-center flex-wrap gap-2 mt-4">
+            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Python</span>
+            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">OpenCV</span>
+            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Image Processing</span>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="p-8">
+          <!-- Overview -->
+          <div class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Project Overview</h2>
+            <p class="text-gray-600">
+              I built a Vehicle Detection Traffic Monitoring System that analyzes captured images and video frames
+              to detect vehicles, identify rule violations, and extract number plates automatically.
+              The system helps automate traffic violation monitoring and record-keeping.
+            </p>
+          </div>
+
+          <!-- Highlights -->
+          <div class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Key Highlights</h2>
+            <div class="space-y-4">
+              <div>
+                <h3 class="text-xl font-medium text-gray-700 mb-2">Image Processing & Detection</h3>
+                <p class="text-gray-600">
+                  Used Python and OpenCV for image processing, background subtraction, and object detection 
+                  to identify vehicles and detect violations from traffic footage.
+                </p>
+              </div>
+              <div>
+                <h3 class="text-xl font-medium text-gray-700 mb-2">Number Plate Extraction</h3>
+                <p class="text-gray-600">
+                  Implemented logic to locate and extract number plates from detected vehicles for further 
+                  identification and record storage.
+                </p>
+              </div>
+              <div>
+                <h3 class="text-xl font-medium text-gray-700 mb-2">Data Storage</h3>
+                <p class="text-gray-600">
+                  Violation details and extracted vehicle numbers are stored in a database for follow-up actions, 
+                  reporting, or integration with external systems.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Features -->
+          <div class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Core Features</h2>
+            <ul class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                'Vehicle detection using image processing and object detection',
+                'Traffic rule violation detection logic',
+                'Number plate region detection and extraction',
+                'Automatic saving of violation records to database',
+                'Support for processing images or video frames',
+                'Structured storage of vehicle numbers and violation details'
+              ].map((item) => (
+                <li class="flex items-start">
+                  <div class="flex-shrink-0 h-5 w-5 text-blue-500 mt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <span class="ml-2 text-gray-600">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <!-- Back -->
+          <div class="text-center">
+            <a href="/myproject" class="inline-flex items-center px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+              </svg>
+              Back to Projects
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
